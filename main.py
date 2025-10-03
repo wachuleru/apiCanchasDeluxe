@@ -26,6 +26,9 @@ dias_semana = {
     "Sunday": "Dom"
 }
 
+# Cliente HTTP global
+client = httpx.AsyncClient(timeout=15)
+
 async def obtener_disponibilidad(fecha: datetime):
     year = fecha.year
     month = f"{fecha.month:02d}"
@@ -41,44 +44,39 @@ async def obtener_disponibilidad(fecha: datetime):
         "cancha3": []
     }
 
-    async with httpx.AsyncClient(timeout=15) as client:
-        for cancha, cancha_id in canchas.items():
-            # Payload exacto
-            payload = (
-                f"action=wc_appointments_get_slots&form="
-                f"wc_appointments_field_start_date_month%3D{month}%26"
-                f"wc_appointments_field_start_date_day%3D{day}%26"
-                f"wc_appointments_field_start_date_year%3D{year}%26"
-                f"wc_appointments_field_start_date_time%3D%26"
-                f"wc_appointments_field_addons_duration%3D0%26"
-                f"wc_appointments_field_addons_cost%3D0%26"
-                f"add-to-cart%3D{cancha_id}%26"
-                f"quantity%3D1&duration=0"
-            )
+    for cancha, cancha_id in canchas.items():
+        payload = (
+            f"action=wc_appointments_get_slots&form="
+            f"wc_appointments_field_start_date_month%3D{month}%26"
+            f"wc_appointments_field_start_date_day%3D{day}%26"
+            f"wc_appointments_field_start_date_year%3D{year}%26"
+            f"wc_appointments_field_start_date_time%3D%26"
+            f"wc_appointments_field_addons_duration%3D0%26"
+            f"wc_appointments_field_addons_cost%3D0%26"
+            f"add-to-cart%3D{cancha_id}%26"
+            f"quantity%3D1&duration=0"
+        )
 
-            headers = {
-                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "origin": "https://deluxesport.cl",
-                "referer": "https://deluxesport.cl/product/cancha-3-football/",
-                "user-agent": "Mozilla/5.0",
-                "x-requested-with": "XMLHttpRequest"
-            }
+        headers = {
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "origin": "https://deluxesport.cl",
+            "referer": "https://deluxesport.cl/product/cancha-3-football/",
+            "user-agent": "Mozilla/5.0",
+            "x-requested-with": "XMLHttpRequest"
+        }
 
-            try:
-                response = await client.post(url, headers=headers, data=payload)
-                html = response.text
-                soup = BeautifulSoup(html, "html.parser")
+        try:
+            response = await client.post(url, headers=headers, data=payload)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, "html.parser")
                 slots = soup.select("ul.slot_column li.slot a")
-
-                if slots:
-                    horas = [s.get("data-value") for s in slots]
-                else:
-                    horas = []
-
-            except Exception:
+                horas = [s.get("data-value") for s in slots] if slots else []
+            else:
                 horas = []
+        except Exception:
+            horas = []
 
-            resultado_dia[cancha] = horas
+        resultado_dia[cancha] = horas
 
     return resultado_dia
 
