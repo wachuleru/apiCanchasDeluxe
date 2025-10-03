@@ -2,3 +2,4 @@ fastapi==0.111.1
 uvicorn==0.23.2
 httpx==0.28.1
 beautifulsoup4==4.12.2
+starlette
