@@ -1,5 +1,5 @@
-fastapi
-uvicorn
-requests
-beautifulsoup4
-pandas
+fastapi==0.111.1
+uvicorn==0.23.2
+httpx==1.2.3
+beautifulsoup4==4.12.2
+lxml==4.9.3
