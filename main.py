@@ -2,9 +2,15 @@ from fastapi import FastAPI
 import httpx
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-
+from starlette.middleware.cors import CORSMiddleware
 app = FastAPI(title="API Canchas Deluxe")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todos los orígenes, puedes limitarlo a ciertos dominios
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos los encabezados
+)
 # IDs de las canchas
 canchas = {
     "cancha1": 5412,
